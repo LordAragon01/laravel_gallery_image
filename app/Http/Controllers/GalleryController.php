@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Image;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use PDOException;
+use stdClass;
 
 class GalleryController extends Controller
 {
@@ -16,11 +20,17 @@ class GalleryController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(DB $db)
     {
 
         //Page Title
         $title = "Galeria de Imagens";
+
+        //Check table rows
+        $rows = $db::select("SELECT COUNT('id') AS total_row FROM images");
+
+        //Check if the data is insert in the table
+        $checkinsert = false;
 
         //Check API URL
         $check_apiurl = $this->getValidateApiUrl($this->urlapiaddress);
@@ -32,13 +42,22 @@ class GalleryController extends Controller
         $api_data = $this->getApiData($url_api, "photos");
 
         //Get Max inform from Data
-        $limit_data = $this->getMaxApiData($api_data);
+        $all_api_data = $this->getMaxApiData($api_data);
 
-        dd($limit_data);
+        //$db::table("images")->truncate();
 
-        return view("pages.home", compact(
-            'title',
-            'check_apiurl'
+       //dd($all_api_data['image']);
+
+       //$checkinsert = $this->store($all_api_data);
+
+       $all = $db::select("SELECT * FROM images");
+
+       //dd($rows[0]->total_row);
+       dd($all);
+
+       return view("pages.home", compact(
+        'title',
+        'check_apiurl'
         ));
 
     }
@@ -130,7 +149,7 @@ class GalleryController extends Controller
 
         $response = Http::timeout(5)->
                     acceptJson()->
-                    get($apiurl);
+                    get($apiurl);          
 
         $data = $response->successful() ? $response->json($indicate_key) : $response->failed();            
 
@@ -176,6 +195,55 @@ class GalleryController extends Controller
         }
 
         return $dynamic_list;
+
+    }
+
+    public function store(array $list_of_images):bool|string
+    {
+
+        try{
+
+            $data_for_insert = new stdClass();
+
+            //Separate data for table column
+            foreach($list_of_images as $value){
+
+                $data_for_insert->id = array_values($value["id"]);
+                $data_for_insert->title = array_values($value["title"]);
+                $data_for_insert->source = array_values($value["image_info"]);
+
+            }
+
+            //Insert data in the table
+            foreach($data_for_insert->id as $idimage_value){
+
+                    $image_id = filter_var($idimage_value, FILTER_DEFAULT);
+
+                foreach($data_for_insert->title as $title_value){
+
+                    $title = filter_var($title_value, FILTER_DEFAULT);
+
+                    foreach($data_for_insert->source as $source_value){
+
+                        $source = filter_var($source_value, FILTER_DEFAULT);
+
+                    }
+
+                }
+
+                $db = new DB();
+
+                $db::insert("INSERT INTO images('image_id', 'title', 'source') VALUES ('". intval($image_id) ."', '". strval($title) ."', '". strval($source) ."')");
+
+            }
+
+            return true;
+
+        }catch(PDOException $exception){
+
+            return $exception->getMessage();
+
+        }
 
     }
  
