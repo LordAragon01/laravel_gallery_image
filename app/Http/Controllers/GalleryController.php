@@ -25,21 +25,14 @@ class GalleryController extends Controller
         //Check API URL
         $check_apiurl = $this->getValidateApiUrl($this->urlapiaddress);
 
-        //Check Image API URL 
-        $check_apiurl_image = $this->getValidateApiUrl($this->urlapiaddressimage);
-
         //Url Api
         $url_api = $this->getUrlApi($check_apiurl);
 
         //Get Api Data
-        $api_data = $this->getApiData($url_api);
+        $api_data = $this->getApiData($url_api, "photos");
 
         //Get Max inform from Data
         $limit_data = $this->getMaxApiData($api_data);
-
-        //Get Image from Api
-        $url_api_image = $this->getImageUrlApi($check_apiurl_image, 52771068707);
-
 
         dd($limit_data);
 
@@ -132,14 +125,14 @@ class GalleryController extends Controller
 
     }
 
-    public function getApiData(string $apiurl):array|bool
+    public function getApiData(string $apiurl, string $indicate_key):array|bool
     {
 
         $response = Http::timeout(5)->
                     acceptJson()->
                     get($apiurl);
 
-        $data = $response->successful() ? $response->json("photos") : $response->failed();            
+        $data = $response->successful() ? $response->json($indicate_key) : $response->failed();            
 
         return $data;
 
@@ -147,6 +140,9 @@ class GalleryController extends Controller
 
     public function getMaxApiData(array $apidata, int $max_data = 10):array
     {
+        //Check Image API URL 
+        $check_apiurl_image = $this->getValidateApiUrl($this->urlapiaddressimage);
+
 
         $list_of_photos = $apidata['photo'];
         $array_key = array_rand($list_of_photos, $max_data);
@@ -154,7 +150,8 @@ class GalleryController extends Controller
         $dynamic_list = [
             "image" => [
                 "id" => [],
-                "title" => []
+                "title" => [],
+                "image_info" => []
             ]
         ];
 
@@ -162,8 +159,17 @@ class GalleryController extends Controller
 
             if(in_array($index, $array_key)){
 
+                //Get Image from Api
+                $url_api_image = $this->getImageUrlApi($check_apiurl_image, $value['id']);
+
+                //Get Api Data
+                $api_data_image = $this->getApiData($url_api_image, "sizes");
+
+                //dd($api_data_image["size"][5]["source"]);
+
                 array_push($dynamic_list["image"]["id"], $value['id']);
                 array_push($dynamic_list["image"]["title"], $value['title']);
+                array_push($dynamic_list["image"]["image_info"], $api_data_image["size"][5]["source"]);
 
             }
 

@@ -15,7 +15,7 @@
                     <div class="order-2 d-flex flex-lg-row flex-column gallery_base col-12" role="list" aria-describedby="Gallery List of Images">
 
                         <div class="card col-12 col-lg-3 col-md-6 mx-2 my-2" aria-labelledby="Card Image">
-                            <img src="..." class="card-img-top" alt="...">
+                            <img src="https://live.staticflickr.com/65535/52776464418_7106397e55_w.jpg" class="card-img-top" alt="...">
                             <div class="card-body">
                             <h5 class="card-title">Card title</h5>
                             </div>
