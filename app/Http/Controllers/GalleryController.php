@@ -109,12 +109,25 @@ class GalleryController extends Controller
 
     }
 
-    public function getMaxApiData($apidata)
+    public function getMaxApiData(array $apidata):array
     {
 
+        $list_of_photos = $apidata['photo'];
+        $array_key = array_rand($list_of_photos, 10);
 
-        return $apidata['photo'];
+        $dynamic_list = [];
 
+        foreach($list_of_photos as $index => $value){
+
+            if(in_array($index, $array_key)){
+
+                array_push($dynamic_list, $value);
+
+            }
+
+        }
+
+        return $dynamic_list;
 
     }
  
