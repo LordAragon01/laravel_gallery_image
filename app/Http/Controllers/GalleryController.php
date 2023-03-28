@@ -9,6 +9,12 @@ use Illuminate\Support\Facades\Http;
 use PDOException;
 use stdClass;
 
+/**
+ * Consumo de API e insert na base de dados
+ * 
+ * @author Joene Galdeano
+ */
+
 class GalleryController extends Controller
 {
 
@@ -29,40 +35,61 @@ class GalleryController extends Controller
         //Check table rows
         $rows = $db::select("SELECT COUNT('id') AS total_row FROM images");
 
-        //Check if the data is insert in the table
-        $checkinsert = false;
-
         //Check API URL
         $check_apiurl = $this->getValidateApiUrl($this->urlapiaddress);
 
-        //Url Api
-        $url_api = $this->getUrlApi($check_apiurl);
+        //Get list of image
+        $image_list = $db::select("SELECT * FROM images");
 
-        //Get Api Data
-        $api_data = $this->getApiData($url_api, "photos");
+        $db::table("images")->truncate();
 
-        //Get Max inform from Data
-        $all_api_data = $this->getMaxApiData($api_data);
+         //Validate Sequence for Api Call
+         if($rows[0]->total_row === 0){
 
-        //$db::table("images")->truncate();
+            //Url Api
+            $url_api = $this->getUrlApi($check_apiurl);
 
-       //dd($all_api_data['image']);
+            //Get Api Data
+            $api_data = $this->getApiData($url_api, "photos");
 
-       //$checkinsert = $this->store($all_api_data);
+            //Get Max inform from Data
+            $all_api_data = $this->getMaxApiData($api_data);
 
-       $all = $db::select("SELECT * FROM images");
+            //Insert data in the table
+            $checkinsert = $this->store($all_api_data);
 
-       //dd($rows[0]->total_row);
-       dd($all);
+            //Get data from table
+            $image_list = $db::select("SELECT * FROM images");
 
-       return view("pages.home", compact(
-        'title',
-        'check_apiurl'
-        ));
+            //dd($rows[0]->total_row);
+            //dd($image_list);
+                        
+            return view("pages.home", compact(
+                'title',
+                'check_apiurl',
+                'image_list'
+            ));
+
+        }else{
+
+            //dd($image_list);
+                        
+            return view("pages.home", compact(
+                'title',
+                'check_apiurl',
+                'image_list'
+            ));
+
+        }
 
     }
 
-
+    /**
+     * Check the Api Url is validate
+     *
+     * @param string $urlapi
+     * @return boolean
+     */
     public function getValidateApiUrl(string $urlapi):bool
     {
 
@@ -82,7 +109,13 @@ class GalleryController extends Controller
 
     }
 
-    public function getUrlApi(bool $check_apiurl):string
+    /**
+     * Structure Url API Default
+     *
+     * @param boolean $check_apiurl
+     * @return string
+     */
+    private function getUrlApi(bool $check_apiurl):string
     {
 
         $url = new ApiGalleryController();
@@ -116,7 +149,14 @@ class GalleryController extends Controller
 
     }
 
-    public function getImageUrlApi(bool $check_apiurl, int $id_image):string
+    /**
+     * Structure Url API for get list of images and sizes
+     *
+     * @param boolean $check_apiurl
+     * @param integer $id_image
+     * @return string
+     */
+    private function getImageUrlApi(bool $check_apiurl, int $id_image):string
     {
 
         $url = new ApiGalleryController();
@@ -144,6 +184,13 @@ class GalleryController extends Controller
 
     }
 
+    /**
+     * Get data from urlapi indicate
+     *
+     * @param string $apiurl
+     * @param string $indicate_key
+     * @return array|boolean
+     */
     public function getApiData(string $apiurl, string $indicate_key):array|bool
     {
 
@@ -157,6 +204,13 @@ class GalleryController extends Controller
 
     }
 
+    /**
+     * Merge urlapi with list of images and get data
+     *
+     * @param array $apidata
+     * @param integer $max_data
+     * @return array
+     */
     public function getMaxApiData(array $apidata, int $max_data = 10):array
     {
         //Check Image API URL 
@@ -198,6 +252,12 @@ class GalleryController extends Controller
 
     }
 
+    /**
+     * Insert data in the Images Table
+     *
+     * @param array $list_of_images
+     * @return boolean|string
+     */
     public function store(array $list_of_images):bool|string
     {
 

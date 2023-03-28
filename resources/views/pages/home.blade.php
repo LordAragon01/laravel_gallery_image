@@ -14,40 +14,24 @@
 
                     <div class="order-2 d-flex flex-lg-row flex-column gallery_base col-12" role="list" aria-describedby="Gallery List of Images">
 
-                        <div class="card col-12 col-lg-3 col-md-6 mx-2 my-2" aria-labelledby="Card Image">
-                            <img src="https://live.staticflickr.com/65535/52776464418_7106397e55_w.jpg" class="card-img-top" alt="...">
-                            <div class="card-body">
-                            <h5 class="card-title">Card title</h5>
-                            </div>
-                        </div>
-        
-                        <div class="card col-12 col-lg-3 col-md-6 mx-2 my-2">
-                            <img src="..." class="card-img-top" alt="...">
-                            <div class="card-body">
-                            <h5 class="card-title">Card title</h5>
-                            </div>
-                        </div>
-        
-                        <div class="card col-12 col-lg-3 col-md-6 mx-2 my-2">
-                            <img src="..." class="card-img-top" alt="...">
-                            <div class="card-body">
-                            <h5 class="card-title">Card title</h5>
-                            </div>
-                        </div>
-        
-                        <div class="card col-12 col-lg-3 col-md-6 mx-2 my-2">
-                            <img src="..." class="card-img-top" alt="...">
-                            <div class="card-body">
-                            <h5 class="card-title">Card title</h5>
-                            </div>
-                        </div>
-        
-                        <div class="card col-12 col-lg-3 col-md-6 mx-2 my-2">
-                            <img src="..." class="card-img-top" alt="...">
-                            <div class="card-body">
-                            <h5 class="card-title">Card title</h5>
-                            </div>
-                        </div>
+                        @if(is_array($image_list) && count($image_list) > 0)
+
+                            @foreach($image_list as $value)
+
+                                <div class="card col-12 col-lg-3 col-md-6 mx-2 my-2" aria-labelledby="Card Image">
+                                    <img src="{{ $value->source }}" class="card-img-top" alt="{{ $value->title }}" data-imageid="{{ $value->image_id }}">
+                                    <div class="card-body">
+                                    <h5 class="card-title">{{ $value->title }}</h5>
+                                    </div>
+                                </div>
+
+                            @endforeach
+
+                        @else
+
+                            <h1 class="my-3 col-12">Nenhuma Imagem para apresentar</h1>
+            
+                        @endif   
 
                     </div>
 
