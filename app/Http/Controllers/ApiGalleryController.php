@@ -92,4 +92,11 @@ class ApiGalleryController
 
     }
 
+    public function setPrivacyFilter(bool $checkurlapi, ?int $privacy):string|null
+    {
+
+        return $checkurlapi === true ? "&privacy_filter=". strval($privacy) : null;
+
+    }
+
 }

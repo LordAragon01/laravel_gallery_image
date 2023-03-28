@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class GalleryController extends Controller
 {
@@ -14,7 +15,7 @@ class GalleryController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(ApiGalleryController $url)
+    public function index()
     {
 
         //Page Title
@@ -23,28 +24,16 @@ class GalleryController extends Controller
         //Check API URL
         $check_apiurl = $this->getValidateApiUrl($this->urlapiaddress);
 
-        //Get API Url method
-        $apimethod = $url->setApiMethod($check_apiurl, "flickr.photos.search");
+        //Url Api
+        $url_api = $this->getUrlApi($check_apiurl);
 
-        //Get API Key
-        $apikey = $url->setApiKey($check_apiurl, config('app.flickr_key'));
+        //Get Api Data
+        $api_data = $this->getApiData($url_api);
 
-        //Get Tags
-        $apitags = $url->setTags($check_apiurl, "kitten");
+        //Get Max inform from Data
+        $limit_data = $this->getMaxApiData($api_data);
 
-        //Get Page
-        $apipage = $url->setPage($check_apiurl, 1);
-
-        //Get Format
-        $apiformat = $url->setFormat($check_apiurl, "json");
-
-        //Get Callback
-        $apicallback = $url->setCallback($check_apiurl, 1);
-
-        //API URL 
-        $apiurl = $this->urlapiaddress . $apimethod . $apikey . $apitags . $apipage . $apiformat . $apicallback;
-
-        var_dump($apiurl);
+        dd($limit_data);
 
         return view("pages.home", compact(
             'title',
@@ -73,69 +62,60 @@ class GalleryController extends Controller
 
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function getUrlApi(bool $check_apiurl):string
     {
-        //
+
+        $url = new ApiGalleryController();
+
+        //Get API Url method
+        $apimethod = $url->setApiMethod($check_apiurl, "flickr.photos.search");
+
+        //Get API Key
+        $apikey = $url->setApiKey($check_apiurl, config('app.flickr_key'));
+
+        //Get Tags
+        $apitags = $url->setTags($check_apiurl, "kitten");
+
+        //Get Page
+        $apipage = $url->setPage($check_apiurl, 1);
+
+        //Get Format
+        $apiformat = $url->setFormat($check_apiurl, "json");
+
+        //Get Callback
+        $apicallback = $url->setCallback($check_apiurl, 1);
+
+        //Get Privacy Filter
+        $privacyfilter = $url->setPrivacyFilter($check_apiurl, 1);
+        $apiprivacyfilter = $privacyfilter !== null ? $privacyfilter : "";
+
+        //API URL 
+        $apiurl = $this->urlapiaddress . $apimethod . $apikey . $apitags . $apipage . $apiformat . $apicallback . $apiprivacyfilter;
+
+        return $apiurl;
+
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+    public function getApiData(string $apiurl):array|bool
     {
-        //
+
+        $response = Http::timeout(5)->
+                    acceptJson()->
+                    get($apiurl);
+
+        $data = $response->successful() ? $response->json("photos") : $response->failed();            
+
+        return $data;
+
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+    public function getMaxApiData($apidata)
     {
-        //
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
+        return $apidata['photo'];
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
+
     }
+ 
 }
