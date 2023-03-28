@@ -8,7 +8,6 @@ class GalleryController extends Controller
 {
 
     private $urlapiaddress = "https://api.flickr.com/services/rest/";
-    //private $apikey = env("FLICKR_API_KEY");
    
     /**
      * Display a listing of the resource.
@@ -18,37 +17,42 @@ class GalleryController extends Controller
     public function index(ApiGalleryController $url)
     {
 
-        $check_apiurl = $this->getValidateApiUrl($this->urlapiaddress);
-
-        //Check API URL
-        if($check_apiurl){
-
-            //Get API Url method
-            $apimethod = $url->setApiMethod($check_apiurl, "?method=flickr.photos.search");
-
-            //Get API Key
-            $key = $url->setApiKey($check_apiurl, config('app.flickr_key'));
-
-            //API URL 
-            $apiurl = $this->urlapiaddress . $apimethod . '&' . $key;
-
-            var_dump($apiurl);
-
-        }
-
+        //Page Title
         $title = "Galeria de Imagens";
 
+        //Check API URL
+        $check_apiurl = $this->getValidateApiUrl($this->urlapiaddress);
+
+        //Get API Url method
+        $apimethod = $url->setApiMethod($check_apiurl, "flickr.photos.search");
+
+        //Get API Key
+        $apikey = $url->setApiKey($check_apiurl, config('app.flickr_key'));
+
+        //Get Tags
+        $apitags = $url->setTags($check_apiurl, "kitten");
+
+        //Get Page
+        $apipage = $url->setPage($check_apiurl, 1);
+
+        //Get Format
+        $apiformat = $url->setFormat($check_apiurl, "json");
+
+        //Get Callback
+        $apicallback = $url->setCallback($check_apiurl, 1);
+
+        //API URL 
+        $apiurl = $this->urlapiaddress . $apimethod . $apikey . $apitags . $apipage . $apiformat . $apicallback;
+
+        var_dump($apiurl);
+
         return view("pages.home", compact(
-            'title'
+            'title',
+            'check_apiurl'
         ));
 
     }
 
-    public function apiKey(){
-
-        return env('APP_NAME');
-
-    }
 
     public function getValidateApiUrl(string $urlapi):bool
     {

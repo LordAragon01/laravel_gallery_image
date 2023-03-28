@@ -53,14 +53,42 @@ class ApiGalleryController
     public function setApiMethod(bool $checkurlapi, string $method):string
     {
 
-        return $checkurlapi === true ? $method : "";
+        return $checkurlapi === true ? "?method=". $method : "";
 
     }
 
-    public function setApiKey(bool $checkurlapi, ?string $apikey):string
+    public function setApiKey(bool $checkurlapi, string $apikey):string
     {
 
-        return $checkurlapi === true ? "api_key=". $apikey : "";
+        return $checkurlapi === true ? "&api_key=". $apikey : "";
+
+    }
+
+    public function setTags(bool $checkurlapi, string $tags):string
+    {
+
+        return $checkurlapi === true ? "&tags=". $tags : "";
+
+    }
+
+    public function setPage(bool $checkurlapi, int $page):string
+    {
+
+        return $checkurlapi === true ? "&page=". strval($page) : "";
+
+    }
+
+    public function setFormat(bool $checkurlapi, string $format):string
+    {
+
+        return $checkurlapi === true ? "&format=". $format : "";
+
+    }
+
+    public function setCallback(bool $checkurlapi, int $callback):string
+    {
+
+        return $checkurlapi === true ? "&nojsoncallback=". strval($callback) : "";
 
     }
 
