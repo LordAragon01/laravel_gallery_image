@@ -9,6 +9,7 @@ class GalleryController extends Controller
 {
 
     private $urlapiaddress = "https://api.flickr.com/services/rest/";
+    private $urlapiaddressimage = "https://www.flickr.com/services/rest/";
    
     /**
      * Display a listing of the resource.
@@ -24,6 +25,9 @@ class GalleryController extends Controller
         //Check API URL
         $check_apiurl = $this->getValidateApiUrl($this->urlapiaddress);
 
+        //Check Image API URL 
+        $check_apiurl_image = $this->getValidateApiUrl($this->urlapiaddressimage);
+
         //Url Api
         $url_api = $this->getUrlApi($check_apiurl);
 
@@ -32,6 +36,10 @@ class GalleryController extends Controller
 
         //Get Max inform from Data
         $limit_data = $this->getMaxApiData($api_data);
+
+        //Get Image from Api
+        $url_api_image = $this->getImageUrlApi($check_apiurl_image, 52771068707);
+
 
         dd($limit_data);
 
@@ -96,6 +104,34 @@ class GalleryController extends Controller
 
     }
 
+    public function getImageUrlApi(bool $check_apiurl, int $id_image):string
+    {
+
+        $url = new ApiGalleryController();
+        $image = new ApiGalleryImageController();
+
+        //Get API Url method
+        $apimethod = $url->setApiMethod($check_apiurl, "flickr.photos.getSizes");
+
+        //Get API Key
+        $apikey = $url->setApiKey($check_apiurl, config('app.flickr_key'));
+
+       //Get Photo Id
+       $photo_id = $image->setPhotoId($check_apiurl, $id_image);
+
+        //Get Format
+        $apiformat = $url->setFormat($check_apiurl, "json");
+
+        //Get Callback
+        $apicallback = $url->setCallback($check_apiurl, 1);
+
+        //API URL 
+        $apiurl = $this->urlapiaddressimage . $apimethod . $apikey . $photo_id . $apiformat . $apicallback;
+
+        return $apiurl;
+
+    }
+
     public function getApiData(string $apiurl):array|bool
     {
 
@@ -109,19 +145,25 @@ class GalleryController extends Controller
 
     }
 
-    public function getMaxApiData(array $apidata):array
+    public function getMaxApiData(array $apidata, int $max_data = 10):array
     {
 
         $list_of_photos = $apidata['photo'];
-        $array_key = array_rand($list_of_photos, 10);
+        $array_key = array_rand($list_of_photos, $max_data);
 
-        $dynamic_list = [];
+        $dynamic_list = [
+            "image" => [
+                "id" => [],
+                "title" => []
+            ]
+        ];
 
         foreach($list_of_photos as $index => $value){
 
             if(in_array($index, $array_key)){
 
-                array_push($dynamic_list, $value);
+                array_push($dynamic_list["image"]["id"], $value['id']);
+                array_push($dynamic_list["image"]["title"], $value['title']);
 
             }
 
