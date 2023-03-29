@@ -41,7 +41,7 @@ class GalleryController extends Controller
         //Get list of image
         $image_list = $db::select("SELECT * FROM images");
 
-        $db::table("images")->truncate();
+        //$db::table("images")->truncate();
 
          //Validate Sequence for Api Call
          if($rows[0]->total_row === 0){
