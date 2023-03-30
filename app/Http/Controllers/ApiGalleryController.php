@@ -177,4 +177,18 @@ class ApiGalleryController
 
     }
 
+    /**
+     * Inform especific params for URL API
+     *
+     * @param array $list_of_params
+     * @return string
+     */
+    public function getParamsUrlApi(array $list_of_params):string
+    {
+
+        return http_build_query($list_of_params);
+
+    }
+
+
 }
