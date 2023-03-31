@@ -29,7 +29,7 @@
 
                         @else
 
-                            <h1 class="my-3 col-12">Nenhuma Imagem para apresentar</h1>
+                            <h1 class="my-3 col-12">{{ $image_list }}</h1>
             
                         @endif   
 

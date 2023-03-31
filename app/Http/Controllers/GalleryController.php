@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use PDOException;
 use stdClass;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Consumo de API e insert na base de dados
@@ -41,7 +42,7 @@ class GalleryController extends Controller
         //Get list of image
         $image_list = $db::select("SELECT * FROM images");
 
-        $db::table("images")->truncate();
+        //$db::table("images")->truncate();
 
          //Validate Sequence for Api Call
          if($rows[0]->total_row === 0){
@@ -52,15 +53,31 @@ class GalleryController extends Controller
             //Get Api Data
             $api_data = $this->getApiData($url_api, "photos");
 
-            //Get Max inform from Data
-            $all_api_data = $this->getMaxApiData($api_data);
+            switch(gettype($api_data)){
 
-            //Insert data in the table
-            $checkinsert = $this->store($all_api_data);
+                case 'array':
+                            
+                    //Get Max inform from Data
+                    $all_api_data = $this->getMaxApiData($api_data);
 
-            //Get data from table
-            $image_list = $db::select("SELECT * FROM images");
+                    //Insert data in the table
+                    $checkinsert = $this->store($all_api_data);
 
+                    //Get data from table
+                    $image_list = $db::select("SELECT * FROM images");
+
+                break;
+                
+                case 'string':
+
+                    //Get Message Error From Api
+                    $image_list = $api_data;
+
+                break;
+
+            }
+
+            //dd($api_data);
             //dd($rows[0]->total_row);
             //dd($image_list);
                         
@@ -127,20 +144,20 @@ class GalleryController extends Controller
         $apikey = $url->setApiKey($check_apiurl, config('app.flickr_key'));
 
         //Get Tags
-        $apitags = $url->setTags($check_apiurl, "kitten");
+        //$apitags = $url->setTags($check_apiurl, "kitten");
 
         //Get Page
-        $apipage = $url->setPage($check_apiurl, 1);
+        //$apipage = $url->setPage($check_apiurl, 1);
 
         //Get Format
-        $apiformat = $url->setFormat($check_apiurl, "json");
+        //$apiformat = $url->setFormat($check_apiurl, "json");
 
         //Get Callback
-        $apicallback = $url->setCallback($check_apiurl, 1);
+        //$apicallback = $url->setCallback($check_apiurl, 1);
 
         //Get Privacy Filter
-        $privacyfilter = $url->setPrivacyFilter($check_apiurl, 1);
-        $apiprivacyfilter = $privacyfilter !== null ? $privacyfilter : "";
+        //$privacyfilter = $url->setPrivacyFilter($check_apiurl, 1);
+        //$apiprivacyfilter = $privacyfilter !== null ? $privacyfilter : "";
 
         //API URL 
         //$apiurl = $this->urlapiaddress . $apimethod . $apikey . $apitags . $apipage . $apiformat . $apicallback . $apiprivacyfilter;
@@ -203,16 +220,31 @@ class GalleryController extends Controller
      * @param string $indicate_key
      * @return array|boolean
      */
-    public function getApiData(string $apiurl, string $indicate_key):array|bool
+    public function getApiData(string $apiurl, string $indicate_key):array|string
     {
 
         $response = Http::timeout(5)->
                     acceptJson()->
-                    get($apiurl);          
+                    get($apiurl); 
+                    
+        //Add callback function for API Request
+        if($response->successful() && $response->json('stat') === "ok"){
 
-        $data = $response->successful() ? $response->json($indicate_key) : $response->failed();            
+            return $response->json($indicate_key);
 
-        return $data;
+        }elseif($response->successful() && $response->json('stat') === "fail"){
+
+            return $response->json('message');
+
+        }else{
+
+            if($response->failed()){
+
+                abort(404, "Erro ao se Conectar");
+
+            }
+
+        }         
 
     }
 
